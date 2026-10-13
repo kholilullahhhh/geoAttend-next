@@ -353,7 +353,7 @@ function LoginForm() {
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
                       aria-pressed={showPassword}
-                      className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-alt hover:text-ink"
+                      className="absolute top-1/2 right-1 inline-flex size-9 coarse:size-10 -translate-y-1/2 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-alt hover:text-ink"
                     >
                       {showPassword ? (
                         <EyeOff className="size-4" aria-hidden="true" />

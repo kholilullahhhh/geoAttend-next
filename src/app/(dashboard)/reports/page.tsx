@@ -184,7 +184,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
             action={
               <Link
                 href={`?from=${isoDaysAgo(29, tz)}&to=${isoDaysAgo(0, tz)}`}
-                className="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink no-underline transition-colors hover:bg-surface-alt"
+                className="inline-flex h-9 coarse:h-10 items-center rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink no-underline transition-colors hover:bg-surface-alt"
               >
                 Tampilkan 30 hari terakhir
               </Link>

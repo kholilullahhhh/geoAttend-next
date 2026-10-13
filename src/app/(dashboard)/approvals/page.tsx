@@ -151,7 +151,7 @@ export default async function ApprovalsPage({ searchParams }: { searchParams: Se
               status !== 'PENDING' ? (
                 <Link
                   href={`/approvals?tab=${tab}&status=PENDING`}
-                  className="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink no-underline transition-colors hover:bg-surface-alt"
+                  className="inline-flex h-9 coarse:h-10 items-center rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink no-underline transition-colors hover:bg-surface-alt"
                 >
                   Kembali ke yang menunggu
                 </Link>

@@ -40,7 +40,7 @@ export function FilterChips({
           key={chip.href}
           href={chip.href}
           aria-current={chip.active ? 'true' : undefined}
-          className={`inline-flex h-8 items-center gap-1.5 rounded-pill border px-3 text-xs font-semibold whitespace-nowrap transition-colors ${
+          className={`inline-flex h-8 coarse:min-h-10 coarse:px-4 items-center gap-1.5 rounded-pill border px-3 text-xs font-semibold whitespace-nowrap transition-colors ${
             chip.active
               ? 'border-transparent bg-accent-soft text-accent-ink'
               : 'border-line-strong bg-surface text-ink-secondary hover:bg-surface-alt hover:text-ink'
@@ -119,14 +119,14 @@ export function ActiveFilters({
       {items.map((item) => (
         <span
           key={item.label}
-          className="inline-flex items-center gap-1 rounded-pill border border-line bg-surface-alt py-0.5 pr-1 pl-2.5"
+          className="inline-flex items-center gap-1 rounded-pill border border-line bg-surface-alt py-0.5 pr-1 pl-2.5 coarse:py-2"
         >
           <span className="text-ink-muted">{item.label}:</span>
           <span className="max-w-40 truncate font-medium text-ink">{item.value}</span>
           <Link
             href={item.href}
             aria-label={`Hapus filter ${item.label} ${item.value}`}
-            className="inline-flex size-5 items-center justify-center rounded-pill text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
+            className="inline-flex size-5 coarse:size-10 items-center justify-center rounded-pill text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
           >
             <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
               <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
@@ -136,7 +136,7 @@ export function ActiveFilters({
       ))}
       <Link
         href={onResetHref}
-        className="rounded-sm font-semibold text-accent-ink hover:underline"
+        className="rounded-sm py-2 font-semibold text-accent-ink hover:underline"
       >
         Atur ulang semua
       </Link>

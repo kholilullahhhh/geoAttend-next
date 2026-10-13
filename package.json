@@ -13,7 +13,10 @@
     "test:watch": "vitest",
     "check:classes": "node scripts/check-tailwind-classes.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:classes && npm run check:contrast"
+    "check:encoding": "node scripts/check-encoding.mjs",
+    "check:touch": "node scripts/check-touch-targets.mjs",
+    "fix:encoding": "node scripts/fix-encoding.mjs",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:classes && npm run check:contrast && npm run check:encoding"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

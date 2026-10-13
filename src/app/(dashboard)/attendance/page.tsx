@@ -175,7 +175,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: S
             action={
               <Link
                 href={`?from=${isoDaysAgo(6, tz)}&to=${isoDaysAgo(0, tz)}`}
-                className="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink no-underline transition-colors hover:bg-surface-alt"
+                className="inline-flex h-9 coarse:h-10 items-center rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink no-underline transition-colors hover:bg-surface-alt"
               >
                 <Search className="mr-1.5 size-3.5" aria-hidden="true" />
                 Tampilkan 7 hari terakhir

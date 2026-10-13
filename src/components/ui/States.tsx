@@ -41,9 +41,14 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
                 <ChevronRight className="size-3.5 shrink-0 text-ink-muted/60" aria-hidden="true" />
               )}
               {item.href && !last ? (
+                /*
+                 * `coarse:py-2.5`: a `text-xs` link is 16px tall, which is a
+                 * miss with a finger. The padding is added only for coarse
+                 * pointers so the desktop crumb trail keeps its tight rhythm.
+                 */
                 <Link
                   href={item.href}
-                  className="rounded-sm text-ink-secondary no-underline hover:text-ink hover:underline"
+                  className="rounded-sm py-0.5 coarse:py-3 text-ink-secondary no-underline hover:text-ink hover:underline"
                 >
                   {item.label}
                 </Link>
@@ -81,7 +86,16 @@ export function PageHeader({
     <header className={`flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between ${className}`}>
       <div className="min-w-0">
         {eyebrow && <div className="mb-1.5">{eyebrow}</div>}
-        <h1 className="text-xl font-semibold tracking-tight text-ink text-balance sm:text-2xl">
+        {/*
+            * `tabIndex={-1}`: the heading joins no tab order, but it can still
+            * receive focus programmatically. That is what makes "you are now on
+            * the reports page" available to a screen-reader user who navigated
+            * here through the drawer, whose focus otherwise ends up nowhere.
+            */}
+          <h1
+            tabIndex={-1}
+            className="text-xl font-semibold tracking-tight text-ink text-balance sm:text-2xl focus:outline-none"
+          >
           {title}
         </h1>
         {description && (
@@ -243,7 +257,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-surface-alt"
+          className="inline-flex h-9 coarse:h-10 items-center gap-1.5 rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-surface-alt"
         >
           <RefreshCw className="size-3.5" aria-hidden="true" />
           Coba lagi

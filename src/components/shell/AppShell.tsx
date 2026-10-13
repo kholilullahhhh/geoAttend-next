@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   CalendarCheck,
   ChevronLeft,
@@ -130,6 +130,18 @@ export function AppShell({
   const open = openFor === pathname;
 
   /*
+   * Stable identity, and that is load-bearing.
+   *
+   * The drawer's focus trap is a `useEffect` keyed on this callback. Passing an
+   * inline `() => setOpenFor(null)` gave it a fresh identity on every render of
+   * AppShell, so the effect tore down and rebuilt itself on each one -- dropping
+   * body scroll lock, yanking focus back to the trigger, then grabbing the panel
+   * again. It happened to be invisible while nothing else was re-rendering, and
+   * very visible the moment a realtime refresh landed.
+   */
+  const closeDrawer = useCallback(() => setOpenFor(null), []);
+
+  /*
    * Sidebar collapse.
    *
    * Deliberately not persisted. The rail is a preference about *this* screen;
@@ -138,6 +150,38 @@ export function AppShell({
    * everyone who never touches the button.
    */
   const [collapsed, setCollapsed] = useState(false);
+
+  /*
+   * Where focus goes after a drawer navigation.
+   *
+   * The drawer reports *that* a navigation happened but not *where*: at the
+   * moment it unmounts the destination route has not committed, so there is no
+   * heading to aim at yet. This ref carries the intent across the route change,
+   * and the effect below acts on it once `pathname` has settled -- the one
+   * point where the new page's DOM really is in the tree.
+   */
+  const pendingHeadingFocus = useRef(false);
+
+  /*
+   * Stable, so the drawer's `navigate` callback stays referentially equal and its
+   * focus-trap effect does not rebuild on every AppShell render.
+   */
+  const handleDrawerNavigate = useCallback(() => {
+    pendingHeadingFocus.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!pendingHeadingFocus.current) return;
+    pendingHeadingFocus.current = false;
+
+    const heading = document.querySelector<HTMLElement>('main h1');
+    if (heading) {
+      heading.focus({ preventScroll: true });
+      return;
+    }
+    // No heading on this route: fall back to the main region itself.
+    document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
+  }, [pathname]);
 
   const groups = visibleGroups(buildNav(pendingCount), viewer);
 
@@ -193,7 +237,18 @@ export function AppShell({
             onClick={() => setCollapsed((v) => !v)}
             aria-label={collapsed ? 'Perlebar sidebar' : 'Perkecil sidebar'}
             aria-pressed={collapsed}
-            className="hidden size-8 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-alt hover:text-ink xl:inline-flex"
+            aria-expanded={!collapsed}
+            /*
+             * Visible at `lg`, not `xl`.
+             *
+             * The toggle used to be `xl:inline-flex`, which meant that collapsing
+             * at 1440px and then narrowing the window hid the only control that
+             * could undo it: the rail stayed 68px wide with no expand button and
+             * no keyboard route back, at every width from 1024 to 1279px. The
+             * rail is perfectly usable at `lg`, so the toggle belongs wherever
+             * the rail is.
+             */
+            className="hidden size-9 shrink-0 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-alt hover:text-ink coarse:size-10 lg:inline-flex"
           >
             <ChevronLeft
               className={`size-4 transition-transform duration-240 ${
@@ -208,7 +263,7 @@ export function AppShell({
           <NavList groups={groups} pathname={pathname} collapsed={collapsed} />
         </nav>
 
-        <div className={`border-t border-line ${collapsed ? 'p-md' : 'p-md'}`}>
+        <div className="shrink-0 border-t border-line p-md">
           <ViewerCard viewer={viewer} collapsed={collapsed} />
         </div>
       </aside>
@@ -220,7 +275,8 @@ export function AppShell({
           groups={groups}
           pathname={pathname}
           viewer={viewer}
-          onClose={() => setOpenFor(null)}
+          onClose={closeDrawer}
+          onNavigate={handleDrawerNavigate}
         />
       )}
 
@@ -259,15 +315,36 @@ function Drawer({
   pathname,
   viewer,
   onClose,
+  onNavigate,
 }: {
   id: string;
   groups: NavGroup[];
   pathname: string;
   viewer: Viewer;
   onClose: () => void;
+  /** Called before `onClose` when a nav link was the reason for closing. */
+  onNavigate?: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
+
+  const dismiss = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  /*
+   * Hand the navigation up to the parent instead of handling focus here.
+   *
+   * This cleanup runs while the drawer is unmounting, which is *before* the
+   * destination page has committed. Focusing `main h1` at that moment either
+   * finds the page the user just left or finds nothing and lands on `<body>`.
+   * AppShell performs the focus from an effect keyed on `pathname`, where the
+   * heading being aimed at actually exists.
+   */
+  const navigate = useCallback(() => {
+    onNavigate?.();
+    onClose();
+  }, [onClose, onNavigate]);
 
   // Move focus in, restore it on close, and trap Tab inside the panel.
   useEffect(() => {
@@ -281,7 +358,7 @@ function Drawer({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
+        dismiss();
         return;
       }
       if (event.key !== 'Tab' || !panel) return;
@@ -302,13 +379,20 @@ function Drawer({
     return () => {
       document.removeEventListener('keydown', onKeyDown, true);
       document.body.style.overflow = previousOverflow;
-      restoreRef.current?.focus?.();
+
+      if (restoreRef.current?.isConnected) {
+        restoreRef.current.focus();
+      }
     };
-  }, [onClose]);
+  }, [dismiss]);
 
   return (
     <div className="fixed inset-0 z-40 lg:hidden">
-      <div className="absolute inset-0 bg-overlay animate-backdrop-in" onClick={onClose} aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-overlay animate-backdrop-in"
+        onClick={dismiss}
+        aria-hidden="true"
+      />
       <div
         ref={panelRef}
         id={id}
@@ -316,21 +400,29 @@ function Drawer({
         aria-modal="true"
         aria-label="Menu navigasi"
         tabIndex={-1}
-        className="absolute inset-y-0 left-0 flex w-78 max-w-[85vw] flex-col border-r border-line bg-sidebar shadow-pop"
+        className="absolute inset-y-0 left-0 flex w-78 max-w-[85vw] animate-drawer-in flex-col border-r border-line bg-sidebar shadow-pop"
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-lg">
           <Brand />
           <button
             type="button"
-            onClick={onClose}
+            onClick={dismiss}
             aria-label="Tutup menu"
-            className="inline-flex size-9 items-center justify-center rounded-md text-ink-secondary transition-colors hover:bg-surface-alt hover:text-ink"
+            className="inline-flex size-9 coarse:size-10 items-center justify-center rounded-md text-ink-secondary transition-colors hover:bg-surface-alt hover:text-ink"
           >
             <X className="size-5" aria-hidden="true" />
           </button>
         </div>
-        <nav className="min-h-0 flex-1 overflow-y-auto p-md" aria-label="Navigasi utama">
-          <NavList groups={groups} pathname={pathname} collapsed={false} onNavigate={onClose} />
+        {/*
+         * `overscroll-contain`: the nav is the only scrollable thing inside a
+         * body that is already locked, so without it a flick at the end of the
+         * list drags the page behind the drawer instead of stopping.
+         */}
+        <nav
+          className="min-h-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden p-md"
+          aria-label="Navigasi utama"
+        >
+          <NavList groups={groups} pathname={pathname} collapsed={false} onNavigate={navigate} />
         </nav>
         <div className="border-t border-line p-md">
           <ViewerCard viewer={viewer} collapsed={false} />
@@ -411,7 +503,12 @@ function NavLink({
       onClick={onNavigate}
       title={collapsed ? item.label : undefined}
       className={`group relative flex items-center rounded-md text-sm font-medium transition-colors ${
-        collapsed ? 'h-10 justify-center px-0' : 'gap-md px-md py-2.5'
+        collapsed
+          ? // A fixed square rather than `h-10 px-0`: it keeps every icon on the
+            // same optical centre as the logo above it, and holds the tap target
+            // at the 40px floor even in the 68px rail.
+            'size-10 shrink-0 justify-center'
+          : 'gap-md px-md py-2.5'
       } ${
         active
           ? 'bg-accent-soft text-accent-ink'
@@ -430,13 +527,20 @@ function NavLink({
         />
       )}
       <Icon className="size-4.5 shrink-0" aria-hidden="true" />
-      {(!collapsed || badge > 0) && (
-        <span className={collapsed ? 'sr-only lg:not-sr-only' : ''}>{item.label}</span>
-      )}
+      {/*
+        The label is `sr-only` while collapsed -- full stop.
+
+        It previously read `sr-only lg:not-sr-only`, which cancelled itself out at
+        every width the rail is visible at: the label reappeared, overflowed the
+        43px link, and pushed the badge out of view. An icon-only link carries its
+        label through `title` and through the visually-hidden text, which is what
+        a screen reader and a long-press both need.
+      */}
+      <span className={collapsed ? 'sr-only' : ''}>{item.label}</span>
       {badge > 0 && (
         <span
           className={`tabular ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-pill bg-warning-soft px-1.5 text-2xs font-bold text-warning ${
-            collapsed ? 'absolute top-1 right-1 h-4 min-w-4 px-1' : ''
+            collapsed ? 'absolute top-0.5 right-0.5 h-4 min-w-4 px-1' : ''
           }`}
         >
           {badge > 99 ? '99+' : badge}
@@ -456,7 +560,7 @@ export function Brand({ collapsed = false }: { collapsed?: boolean }) {
     <Link
       href="/"
       className="flex min-w-0 items-center gap-2.5 rounded-md py-1 no-underline"
-      aria-label={`${brand.name} â€” ringkasan`}
+      aria-label={`${brand.name} — ringkasan`}
     >
       <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-accent text-on-accent">
         <MapPin className="size-4.5" aria-hidden="true" />

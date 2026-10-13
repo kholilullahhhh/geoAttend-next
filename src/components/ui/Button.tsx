@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
  * a screen full of actions still has a clear reading order.
  *
  * Mobile guarantees a 48dp touch target because it is a thumb-driven tool. The
- * web steps down to a 40px floor (`control.minTarget`, WCAG 2.5.5) â€” but the
+ * web steps down to a 40px floor (`control.minTarget`, WCAG 2.5.5) — but the
  * `sm` size is for dense toolbars only, never the sole way to reach an action.
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'subtle';
@@ -28,15 +28,22 @@ const VARIANTS: Record<ButtonVariant, string> = {
   danger: 'bg-danger text-white border border-transparent hover:brightness-110 active:brightness-95',
 };
 
+/*
+ * `sm` is 36px, which is under the 40px floor the project set in
+ * `control.minTarget` (WCAG 2.5.5). It is kept for dense desktop toolbars where
+ * the pointer is precise, and the `coarse:` override restores the floor wherever
+ * a finger is doing the aiming -- including on a 1024px tablet, which is as
+ * touch-only as a phone.
+ */
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-xs gap-1.5',
+  sm: 'h-9 coarse:h-10 px-3 text-xs gap-1.5',
   md: 'h-10 px-3.5 text-sm gap-2',
   lg: 'h-11 px-4 text-sm gap-2',
 };
 
 /** Square icon-only button. `label` becomes the accessible name. */
 const ICON_SIZES: Record<ButtonSize, string> = {
-  sm: 'size-9',
+  sm: 'size-9 coarse:size-10',
   md: 'size-10',
   lg: 'size-11',
 };

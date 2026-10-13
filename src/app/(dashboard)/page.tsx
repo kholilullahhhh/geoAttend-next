@@ -292,7 +292,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: Sea
           padded={false}
           className="2xl:col-span-2"
           action={
-            <Link href="/attendance" className="inline-flex items-center gap-1 text-xs font-semibold text-accent-ink hover:underline">
+            <Link
+              href="/attendance"
+              className="-my-2 inline-flex items-center gap-1 py-2 coarse:py-3 text-xs font-semibold text-accent-ink hover:underline"
+            >
               Lihat semua
               <ArrowUpRight className="size-3.5" aria-hidden="true" />
             </Link>
@@ -303,7 +306,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: Sea
               title="Belum ada absensi"
               description="Tidak ada check-in yang tercatat pada tanggal ini. Ubah tanggal atau atur ulang filter di atas untuk melihat hari lain."
               action={
-                <Link href="/attendance">
+                <Link
+                  href="/attendance"
+                  className="-m-2 inline-flex p-2 no-underline"
+                >
                   <Button size="sm" variant="secondary">
                     Buka daftar absensi
                   </Button>

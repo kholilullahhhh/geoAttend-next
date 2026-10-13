@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 /**
  * Data table.
@@ -11,7 +11,7 @@
  * `role="region"`).
  *
  * The header is sticky so that a 50-row page keeps its column meanings visible
- * while scrolling â€” on a monitoring screen, "which column was distance?" is
+ * while scrolling — on a monitoring screen, "which column was distance?" is
  * answered without scrolling back up.
  */
 
@@ -155,7 +155,7 @@ export function Td({
  * Row.
  *
  * Hover is a tint of the surface, and the *entire* row links to the detail page
- * via a stretched anchor in the first cell â€” a row that looks clickable but
+ * via a stretched anchor in the first cell — a row that looks clickable but
  * only responds on the name is the most common way a table gets mis-used.
  */
 export function Tr({
@@ -195,7 +195,7 @@ export function IdentityCell({
  * Cell content that links to the detail page.
  *
  * The anchor is `after:absolute inset-0`, which makes the whole row a hit
- * target while keeping a single, correctly-labelled tab stop in the row â€” a
+ * target while keeping a single, correctly-labelled tab stop in the row — a
  * per-cell link in every column would put a dozen tab stops in one record.
  */
 export function RowLink({
@@ -248,7 +248,7 @@ export function Pagination({
     >
       <p className="tabular text-xs text-ink-muted">
         Menampilkan {showing.toLocaleString('id-ID')} dari {total.toLocaleString('id-ID')} catatan
-        {' Â· '}
+        {' · '}
         halaman {page} dari {totalPages.toLocaleString('id-ID')}
       </p>
       <div className="flex items-center gap-2">
@@ -273,7 +273,7 @@ function PageLink({
   children: ReactNode;
 }) {
   const base =
-    'inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-medium transition-colors';
+    'inline-flex h-9 coarse:h-10 items-center justify-center rounded-md border px-3 text-xs font-medium transition-colors';
   if (!href) {
     // Rendered, not omitted: the control keeps its place so the row does not
     // reflow as the user pages through, and `aria-disabled` explains why.

@@ -116,7 +116,7 @@ export function ThemeToggle() {
       aria-pressed={dark}
       aria-label={dark ? 'Beralih ke mode terang' : 'Beralih ke mode gelap'}
       title={dark ? 'Mode gelap' : 'Mode terang'}
-      className="inline-flex size-9 items-center justify-center rounded-md text-ink-secondary transition-colors hover:bg-surface-alt hover:text-ink"
+      className="inline-flex size-9 coarse:size-10 items-center justify-center rounded-md text-ink-secondary transition-colors hover:bg-surface-alt hover:text-ink"
     >
       {dark ? <Sun className="size-4.5" aria-hidden="true" /> : <Moon className="size-4.5" aria-hidden="true" />}
       <span role="status" aria-live="polite" className="sr-only">

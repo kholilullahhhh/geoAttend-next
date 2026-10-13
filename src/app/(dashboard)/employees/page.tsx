@@ -229,7 +229,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Se
             action={
               <Link
                 href="/employees"
-                className="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink no-underline transition-colors hover:bg-surface-alt"
+                className="inline-flex h-9 coarse:h-10 items-center rounded-md border border-line-strong bg-surface px-3 text-xs font-medium text-ink no-underline transition-colors hover:bg-surface-alt"
               >
                 Tampilkan semua karyawan
               </Link>

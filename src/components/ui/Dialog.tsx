@@ -119,7 +119,7 @@ export function Dialog({
    * This is the collision `globals.css` warns about: because the project
    * defines `--spacing-sm/md/lg/xl/2xl/3xl` (the mobile app's 4pt scale),
    * Tailwind resolves `max-w-<name>` against that scale. `max-w-xl` therefore
-   * became 1.5rem â€” a 24px dialog that clipped its own title to one character
+   * became 1.5rem — a 24px dialog that clipped its own title to one character
    * per line, and which a screenshot caught but a build never would.
    *
    * Numeric equivalents: max-w-sm(24rem)=96, md(28rem)=112, lg(32rem)=128,
@@ -234,7 +234,7 @@ export function ConfirmDialog({
               destructive ? 'bg-danger' : 'bg-accent text-on-accent'
             }`}
           >
-            {loading ? (busyLabel ?? 'Memprosesâ€¦') : confirmLabel}
+            {loading ? (busyLabel ?? 'Memproses…') : confirmLabel}
           </button>
         </>
       }

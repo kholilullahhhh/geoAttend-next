@@ -4,8 +4,23 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
+ * Touch target sizing.
+ *
+ * A 32px filter chip is right on a desktop, where the pointer is precise and the
+ * density is the point, and wrong on a phone or tablet, where it is a miss. The
+ * breakpoint that actually predicts this is not screen width -- a 1024px tablet
+ * is as touch-only as a 390px phone -- so the variant keys off the pointer
+ * instead: `coarse:min-h-10` gives fingers the 40px floor from WCAG 2.5.5
+ * wherever they are, and leaves the compact desktop sizing alone.
+ *
+ * Deliberately not persisted or JS-detected: the media query is already the
+ * source of truth at first paint, so there is no hydration mismatch to guard.
+ */
+@custom-variant coarse (@media (pointer: coarse));
+
+/*
  * ===========================================================================
- * GeoAttend design tokens â€” shared with the mobile app
+ * GeoAttend design tokens — shared with the mobile app
  * ===========================================================================
  *
  * Provenance
@@ -60,7 +75,7 @@
    */
   --on-accent: #ffffff;
   /*
-   * Saturated orange for non-text graphics only â€” chart bars, progress fills.
+   * Saturated orange for non-text graphics only — chart bars, progress fills.
    * 3.56:1 on white clears WCAG 1.4.11 for meaningful non-text content, but it
    * is never used for type.
    */
@@ -199,7 +214,7 @@
   --color-sidebar: var(--sidebar);
   /*
    * Sticky app chrome. Already carries its own alpha (`rgb(... / 0.86)`) so it
-   * is registered as a token rather than applied via an opacity modifier â€” a
+   * is registered as a token rather than applied via an opacity modifier — a
    * modifier would multiply the existing alpha instead of replacing it.
    */
   --color-topbar: var(--topbar);
@@ -218,7 +233,7 @@
   /*
    * Named spacing scale, 4pt, shared with the mobile app (`space`).
    *
-   * âš  Collision warning. Tailwind v4 resolves `max-w-<name>` against THIS
+   * ⚠ Collision warning. Tailwind v4 resolves `max-w-<name>` against THIS
    * scale whenever a `--spacing-<name>` token exists, only falling back to the
    * container scale otherwise. So naming these `sm/md/lg` silently turns
    * `max-w-sm` into 0.5rem (8px) and collapses every centred column to one
@@ -352,6 +367,30 @@
     }
     to {
       opacity: 1;
+    }
+  }
+
+  /*
+   * Drawer entrance.
+   *
+   * The scrim already fades, so the panel only has to travel the 16px it is
+   * offset by -- `motion.fast` (160ms) and the standard deceleration curve, the
+   * same duration the dialog uses. The distance stays under the threshold where
+   * sliding panels become uncomfortable, and the reduced-motion block below
+   * removes it entirely for anyone who asked.
+   */
+  .animate-drawer-in {
+    animation: geoattend-drawer-in 160ms cubic-bezier(0, 0, 0.2, 1) both;
+  }
+
+  @keyframes geoattend-drawer-in {
+    from {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
     }
   }
 }

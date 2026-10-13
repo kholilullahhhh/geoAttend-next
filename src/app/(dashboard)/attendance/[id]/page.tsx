@@ -350,7 +350,7 @@ export default async function AttendanceDetailPage({
                       </p>
                       {hasDiff(entry) && (
                         <details className="mt-1.5 group">
-                          <summary className="cursor-pointer list-none text-xs font-medium text-accent-ink hover:underline">
+                          <summary className="inline-block cursor-pointer list-none py-0.5 coarse:py-3 text-xs font-medium text-accent-ink hover:underline">
                             <span className="group-open:hidden">Lihat perubahan</span>
                             <span className="hidden group-open:inline">Tutup perubahan</span>
                           </summary>
