@@ -1,66 +1,167 @@
-@import 'tailwindcss';
+﻿@import 'tailwindcss';
 
 /* Class-based dark mode so the user can override the OS preference. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Semantic tokens. Declared as CSS variables so `dark` can repoint them, then
- * exposed to Tailwind through `@theme inline`.
+ * ===========================================================================
+ * GeoAttend design tokens â€” shared with the mobile app
+ * ===========================================================================
  *
- * Values are copied verbatim from apps/mobile/src/constants/theme.ts so the
- * employee app and the dashboard read as one product.
+ * Provenance
+ * ----------
+ * Every colour, radius and metric below is copied from
+ * `apps/mobile/src/constants/theme.ts`, which the mobile app treats as the
+ * single source of truth. When one of these values changes, change it in both
+ * files; a divergence is a brand regression, not a styling preference.
+ *
+ * The values that are NOT in `theme.ts` and exist only for the web shell
+ * (control heights, elevation, chart-fill accent, focus ring) are marked
+ * "web-only" below.
+ *
+ * Contrast
+ * --------
+ * Badge pairs (soft background + status foreground) were chosen so every one
+ * clears WCAG AA for body text in both schemes:
+ *   light  success 4.85:1  warning 8.05:1  danger 6.9:1  info 5.3:1  accent 6.8:1
+ *   dark   success 10.0:1  warning 11.5:1 danger 7.4:1  info 11.1:1  accent 11.5:1
+ * `--border-input` sits at 3.4:1 on white, which is the WCAG 1.4.11 floor for a
+ * non-text UI boundary; the decorative `--border` is intentionally fainter
+ * because it carries no information.
  */
 :root {
-  --bg: #f8fafc;
+  /* --- Warm neutral scale (theme.ts -> NeutralScale) --- */
+  --bg: #faf9f7;
   --surface: #ffffff;
-  --surface-alt: #f1f5f9;
-  --surface-sunken: #e2e8f0;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --text: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --surface-alt: #f4f1ed;
+  --surface-sunken: #eae5df;
+  --border: #e7e1da;
+  --border-strong: #d3ccc4;
+  /*
+   * The edge of a control the user must be able to identify. Mobile separates
+   * this from `--border` for the same reason: a hairline divider is decorative,
+   * but a text field's outline is load-bearing.
+   */
+  --border-input: #8f8780;
+  --text: #1c1917;
+  --text-secondary: #57534e;
+  --text-muted: #6b645e;
   --text-inverse: #ffffff;
-  --overlay: rgb(15 23 42 / 0.45);
+  --overlay: rgb(28 25 23 / 0.45);
 
-  --accent: #1d4ed8;
-  --accent-soft: #dbeafe;
-  --accent-ink: #1e3a8a;
-  /* Foreground that sits on top of --accent. The accent inverts in dark mode
-     (a light blue), so a fixed white label would drop to about 2.2:1.
-     This token flips with the scheme instead. */
+  /* --- Accent (theme.ts -> brand) --- */
+  --accent: #c2410c;
+  --accent-soft: #ffedd5;
+  --accent-ink: #9a3412;
+  /*
+   * Foreground that sits on top of `--accent`. The accent inverts in dark mode
+   * (a light orange), so a fixed white label would drop to about 2.2:1. This
+   * token flips with the scheme instead.
+   */
   --on-accent: #ffffff;
+  /*
+   * Saturated orange for non-text graphics only â€” chart bars, progress fills.
+   * 3.56:1 on white clears WCAG 1.4.11 for meaningful non-text content, but it
+   * is never used for type.
+   */
+  --accent-bright: #ea580c;
+
+  /* --- Status --- */
   --success: #047857;
   --success-soft: #d1fae5;
-  --warning: #b45309;
+  --warning: #92400e;
   --warning-soft: #fef3c7;
   --danger: #b91c1c;
   --danger-soft: #fee2e2;
   --info: #0e7490;
   --info-soft: #cffafe;
+
+  /*
+   * Saturated status fills, for non-text graphics only — chart bars and legend
+   * strokes.
+   *
+   * They exist for the same reason `--accent-bright` does. `--warning` is
+   * #92400E: a dark brown chosen to reach 8:1 as *text* on a pale amber. Used
+   * as a bar fill beside a saturated orange it reads as a second "present"
+   * series rather than as "late", so the graphic needs its own value. Never used
+   * for type.
+   */
+  --warning-bright: #d97706;
+  --info-bright: #0891b2;
+  --success-bright: #059669;
+
+  /* --- Chrome --- */
+  --sidebar: #ffffff;
+  --topbar: rgb(255 255 255 / 0.86);
+  --focus-ring: #c2410c;
+
+  /* --- Elevation (web-only; mobile uses platform elevation instead) --- */
+  --shadow-card: 0 1px 2px rgb(28 25 23 / 0.04);
+  --shadow-pop: 0 8px 24px -6px rgb(28 25 23 / 0.12), 0 2px 6px -2px rgb(28 25 23 / 0.08);
 }
 
+/*
+ * Dark scheme.
+ *
+ * The mobile app deliberately ships one palette only (see the note in
+ * `theme.ts`), so this dark scheme is a web-only addition. It is not a naive
+ * inversion: each status `*-soft` tint becomes a dark surface of the same hue
+ * rather than keeping the light pastel. Inheriting the light pastels here was
+ * what produced light-green-on-mint badges at roughly 1.3:1.
+ */
 .dark {
-  --bg: #0b1120;
-  --surface: #111827;
-  --surface-alt: #1a2333;
-  --surface-sunken: #0f172a;
-  --border: #1f2a3c;
-  --border-strong: #334155;
-  --text: #f1f5f9;
-  --text-secondary: #b6c2d2;
-  --text-muted: #8a97aa;
-  --text-inverse: #0b1120;
-  --overlay: rgb(2 6 16 / 0.6);
+  --bg: #12100e;
+  --surface: #1c1917;
+  --surface-alt: #262220;
+  --surface-sunken: #0c0a09;
+  --border: #302b27;
+  --border-strong: #4a423c;
+  --border-input: #8a827b;
+  --text: #f5f3f1;
+  --text-secondary: #c8c2bc;
+  --text-muted: #a39c95;
+  --text-inverse: #1c1917;
+  --overlay: rgb(0 0 0 / 0.65);
 
-  --accent: #60a5fa;
-  --accent-ink: #93c5fd;
-    /* Dark ink on the now-light accent, so the primary button stays legible. */
-    --on-accent: #0b1220;
-  --success: #34d399;
-  --warning: #fbbf24;
+/*
+ * The dark accent inverts to a light orange so it stays legible as *text* on
+ * a dark surface, which forces two related tokens to diverge from light mode:
+ *
+ *  - `--on-accent` is dark ink, because it sits on top of that light fill.
+ *    #431407 measured 9.28:1, but the base layer dims disabled controls with
+ *    `opacity: 0.5`, and the composite only reached 4.11:1 -- below AA. A
+ *    darker ink keeps the same relationship with more headroom.
+ *  - `--accent-ink` stays the light orange, but ONLY as text on dark surfaces.
+ *    It must never be a foreground on `--accent-soft` in dark mode: that tint
+ *    is a dark brown there, and the pairing is what produced the
+ *    low-contrast "Setujui" button.
+ */
+  --accent: #fdba74;
+  --accent-soft: #2a1608;
+  --accent-ink: #fdba74;
+  --on-accent: #140a04;
+  --accent-bright: #fdba74;
+
+  --success: #4ade80;
+  --success-soft: #0e2a1e;
+  --warning: #fcd34d;
+  --warning-soft: #2e2410;
   --danger: #f87171;
-  --info: #22d3ee;
+  --danger-soft: #2f1414;
+  --info: #5eead4;
+  --info-soft: #0c2a2e;
+
+  /* The dark accent is already light, so the "bright" status fills match it. */
+  --warning-bright: #fcd34d;
+  --info-bright: #5eead4;
+  --success-bright: #4ade80;
+
+  --sidebar: #16130f;
+  --topbar: rgb(18 16 14 / 0.82);
+  --focus-ring: #fdba74;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-pop: 0 8px 24px -6px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.4);
 }
 
 @theme inline {
@@ -70,6 +171,7 @@
   --color-surface-sunken: var(--surface-sunken);
   --color-line: var(--border);
   --color-line-strong: var(--border-strong);
+  --color-line-input: var(--border-input);
   --color-ink: var(--text);
   --color-ink-secondary: var(--text-secondary);
   --color-ink-muted: var(--text-muted);
@@ -78,6 +180,12 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
+  --color-accent-bright: var(--accent-bright);
+
+  /* Saturated fills for chart series and legend strokes. Never for text. */
+  --color-warning-bright: var(--warning-bright);
+  --color-info-bright: var(--info-bright);
+  --color-success-bright: var(--success-bright);
   --color-on-accent: var(--on-accent);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
@@ -88,13 +196,32 @@
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
 
+  --color-sidebar: var(--sidebar);
   /*
-   * Named spacing scale, 4pt, shared with the mobile app.
+   * Sticky app chrome. Already carries its own alpha (`rgb(... / 0.86)`) so it
+   * is registered as a token rather than applied via an opacity modifier â€” a
+   * modifier would multiply the existing alpha instead of replacing it.
+   */
+  --color-topbar: var(--topbar);
+  --color-overlay: var(--overlay);
+
+  /*
+   * Focus ring colour.
    *
-   * ⚠ Collision warning. Tailwind v4 resolves `max-w-<name>` against THIS
+   * Registered as a colour so `outline-focus-ring` generates a real rule. A
+   * per-component focus colour is exactly the kind of thing that drifts into
+   * `#2563EB` on one form and `var(--accent)` on another; one token removes the
+   * possibility.
+   */
+  --color-focus-ring: var(--focus-ring);
+
+  /*
+   * Named spacing scale, 4pt, shared with the mobile app (`space`).
+   *
+   * âš  Collision warning. Tailwind v4 resolves `max-w-<name>` against THIS
    * scale whenever a `--spacing-<name>` token exists, only falling back to the
-   * container scale otherwise. So naming these `sm/md/lg` silently turned
-   * `max-w-sm` into 0.5rem (8px) and collapsed every centred column to one
+   * container scale otherwise. So naming these `sm/md/lg` silently turns
+   * `max-w-sm` into 0.5rem (8px) and collapses every centred column to one
    * word per line. Numeric equivalents are used in the code instead:
    *   max-w-sm (24rem) -> max-w-96
    *   max-w-md (28rem) -> max-w-112
@@ -109,13 +236,60 @@
   --spacing-2xl: 2rem;
   --spacing-3xl: 3rem;
 
+  /* theme.ts -> radius. `pill` was previously undeclared, so every
+     `rounded-pill` in the app silently emitted no CSS at all. */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* theme.ts -> shadow, as CSS box-shadows (web-only adaptation). */
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /*
+   * Two extra type steps below Tailwind's `text-xs` (12px).
+   *
+   * `2xs` is the web counterpart of the mobile `label` variant (11px) and is
+   * used for the uppercase micro-labels that head a table column or a card.
+   * It is only ever used at semibold/bold weight, where 11px stays legible;
+   * body copy never drops below 13px.
+   */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
 }
+
+/*
+ * Named motion and control scales.
+ *
+ * Both mirror `theme.ts` on the mobile app, so a transition or a control height
+ * means the same thing in either app. Tailwind's bare numeric durations
+ * (`duration-150`) work too, but a named token keeps the value in one place:
+ * `motion.duration.fast` in React Native, `--duration-fast` here.
+ *
+ * Control heights step down from mobile's 48dp because this is a desk tool with
+ * a mouse; the floor is 40px, which is the comfortable minimum WCAG 2.5.5 asks
+ * for, so anything reachable with a finger still clears it.
+ */
+@theme inline {
+  --spacing-control-sm: 2.25rem;
+  --spacing-control-md: 2.5rem;
+  --spacing-control-lg: 2.75rem;
+}
+
+/*
+ * Motion durations.
+ *
+ * Tailwind v4 has no `--duration-*` theme namespace, so `duration-fast` would
+ * be silently dropped. The values live in `lib/design.ts` as
+ * `motion.duration` (mirroring the mobile app) and are written here as bare
+ * numbers: `duration-160` is `motion.duration.fast`, `duration-240` is
+ * `motion.duration.normal`. `scripts/check-tailwind-classes.mjs` fails the build
+ * if one of them ever stops resolving.
+ */
 
 @layer base {
   html {
@@ -128,18 +302,57 @@
     color: var(--text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Visible focus for keyboard users only. */
+  /*
+   * Visible focus for keyboard users only. The global `:focus-visible`
+   * outline is removed so it cannot double up with per-component rings, and
+   * every interactive component below opts back in explicitly.
+   */
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
     border-radius: 4px;
   }
 
-  /* Numerals in tables and timers must not jitter as values change. */
+  /* Numerals in tables, timers and metrics must not jitter as values change. */
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Consistent, unobtrusive selection so highlighted rows still read. */
+  ::selection {
+    background-color: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  /* Never hide the focus ring from a keyboard user on a scrollable region. */
+  [tabindex='0']:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+  }
+}
+
+@layer utilities {
+  /*
+   * Dialog entrance.
+   *
+   * `theme.ts -> motion.fast` (160ms), opacity only. A dialog that slides or
+   * scales in is motion the user did not ask for, and the global reduced-motion
+   * block below collapses this to nothing for anyone who opted out.
+   */
+  .animate-backdrop-in {
+    animation: geoattend-backdrop-in 160ms ease-out both;
+  }
+
+  @keyframes geoattend-backdrop-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 }
 
@@ -150,5 +363,6 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

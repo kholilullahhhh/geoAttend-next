@@ -1,21 +1,30 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useCallback, useState, useSyncExternalStore } from 'react';
+import { LogOut, Moon, Sun } from 'lucide-react';
 
-import { createClient } from '@/lib/supabase/client';
+import { ConfirmDialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
+import { createClient } from '@/lib/supabase/client';
 
 /**
  * Sign out.
+ *
+ * Confirmation, because the consequence is not obvious from the button: the
+ * session is destroyed and any unsaved filter state is lost. The dialog also
+ * names what happens, so the choice is informed rather than reflexive.
  *
  * Uses the browser client, then hard-navigates so every Server Component is
  * re-rendered without the (now destroyed) session cookie.
  */
 export function SignOutButton() {
+  const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     setBusy(true);
+    setError(null);
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
@@ -28,12 +37,33 @@ export function SignOutButton() {
     // would keep rendering data fetched under the previous session.
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = '/login';
-  }
+  }, []);
 
   return (
-    <Button variant="ghost" size="sm" loading={busy} onClick={signOut}>
-      Keluar
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        icon={<LogOut className="size-4" aria-hidden="true" />}
+        onClick={() => setConfirming(true)}
+        className="px-2.5"
+      >
+        <span className="hidden sm:inline">Keluar</span>
+      </Button>
+
+      <ConfirmDialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        onConfirm={() => void signOut()}
+        title="Keluar dari dashboard?"
+        description="Sesi di perangkat ini akan diakhiri. Anda perlu masuk kembali untuk melihat data monitoring."
+        confirmLabel="Keluar"
+        cancelLabel="Batal"
+        loading={busy}
+        busyLabel="Mengakhiri sesi…"
+        error={error}
+      />
+    </>
   );
 }
 
@@ -57,7 +87,9 @@ function subscribe(onChange: () => void) {
  * Colour scheme toggle.
  *
  * Persisted to `localStorage` and applied before paint, so there is no flash of
- * the wrong theme on reload.
+ * the wrong theme on reload. `aria-pressed` states the current mode, and the
+ * button also carries a polite live region so the switch is announced instead
+ * of being a purely visual change.
  */
 export function ThemeToggle() {
   const dark = useSyncExternalStore(
@@ -81,27 +113,15 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
+      aria-pressed={dark}
       aria-label={dark ? 'Beralih ke mode terang' : 'Beralih ke mode gelap'}
-      className="inline-flex size-9 items-center justify-center rounded-md text-ink-secondary hover:bg-surface-alt"
+      title={dark ? 'Mode gelap' : 'Mode terang'}
+      className="inline-flex size-9 items-center justify-center rounded-md text-ink-secondary transition-colors hover:bg-surface-alt hover:text-ink"
     >
-      {dark ? <SunIcon /> : <MoonIcon />}
+      {dark ? <Sun className="size-4.5" aria-hidden="true" /> : <Moon className="size-4.5" aria-hidden="true" />}
+      <span role="status" aria-live="polite" className="sr-only">
+        {dark ? 'Mode gelap aktif' : 'Mode terang aktif'}
+      </span>
     </button>
-  );
-}
-
-function SunIcon() {
-  return (
-    <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }

@@ -1,12 +1,23 @@
 import type { ReactNode } from 'react';
 
-export type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'accent';
+import { iconSize } from '@/lib/design';
+import {
+  attendanceStatus,
+  requestStatus,
+  type Icon,
+  type Tone,
+} from '@/lib/status';
 
 /**
  * Status pill.
  *
- * Colour alone never carries the meaning: every pill includes a text label, so
- * the status is still readable with colour vision deficiency or in monochrome.
+ * Mirrors `apps/mobile/src/components/Badge.tsx`: pill radius, a label that is
+ * always present, and an optional glyph so state survives colour-vision
+ * deficiency and a greyscale print.
+ *
+ * Note the radius. This used to be `rounded-sm`, and `rounded-pill` elsewhere
+ * silently emitted no CSS at all because `--radius-pill` had never been
+ * declared. Both are fixed by the token now.
  */
 const TONES: Record<Tone, string> = {
   neutral: 'bg-surface-alt text-ink-secondary',
@@ -17,57 +28,117 @@ const TONES: Record<Tone, string> = {
   accent: 'bg-accent-soft text-accent-ink',
 };
 
+const SIZES = {
+  sm: { box: 'size-3.5', text: 'text-2xs', pad: 'px-2 py-0.5 gap-1' },
+  md: { box: 'size-4', text: 'text-xs', pad: 'px-2.5 py-1 gap-1.5' },
+} as const;
+
+export interface BadgeProps {
+  tone?: Tone;
+  size?: keyof typeof SIZES;
+  children: ReactNode;
+  className?: string;
+  /** Long-form explanation shown on hover and read by screen readers. */
+  title?: string;
+  /** Opt-in glyph. Omit where the surrounding text already carries the state. */
+  icon?: Icon;
+}
+
 export function Badge({
   tone = 'neutral',
+  size = 'md',
   children,
   className = '',
   title,
-}: {
-  tone?: Tone;
-  children: ReactNode;
-  className?: string;
-  /** Long-form explanation shown on hover and by screen readers. */
-  title?: string;
-}) {
+  icon: Icon,
+}: BadgeProps) {
+  const s = SIZES[size];
+  const Glyph = Icon;
   return (
     <span
       title={title}
-      className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium whitespace-nowrap ${TONES[tone]} ${className}`}
+      className={`inline-flex max-w-full items-center rounded-pill font-semibold whitespace-nowrap ${s.pad} ${s.text} ${TONES[tone]} ${className}`}
     >
-      {children}
+      {Glyph ? <Glyph className={s.box} aria-hidden="true" /> : null}
+      <span className="truncate">{children}</span>
     </span>
   );
 }
 
-const STATUS_LABEL: Record<string, { label: string; tone: Tone }> = {
-  CHECKED_IN: { label: 'Sedang bekerja', tone: 'success' },
-  COMPLETED: { label: 'Selesai', tone: 'accent' },
-  REJECTED: { label: 'Ditolak', tone: 'danger' },
-  EXCUSED: { label: 'Dispensasi', tone: 'info' },
-  ABSENT: { label: 'Tidak hadir', tone: 'neutral' },
-  PENDING: { label: 'Menunggu', tone: 'warning' },
-  APPROVED: { label: 'Disetujui', tone: 'success' },
-  CANCELLED: { label: 'Dibatalkan', tone: 'neutral' },
-};
-
-export function AttendanceStatusBadge({ status }: { status: string }) {
-  const cfg = STATUS_LABEL[status] ?? { label: status, tone: 'neutral' as Tone };
-  return <Badge tone={cfg.tone}>{cfg.label}</Badge>;
+/**
+ * Badge for an `attendance_records.status` code, including the glyph.
+ *
+ * Sizing the glyph to the badge rather than to a fixed icon size is what keeps
+ * a dense table from looking like a row of mismatched stickers.
+ */
+export function AttendanceStatusBadge({
+  status,
+  size = 'md',
+}: {
+  status: string;
+  size?: keyof typeof SIZES;
+}) {
+  const spec = attendanceStatus(status);
+  return (
+    <Badge tone={spec.tone} size={size} icon={spec.icon}>
+      {spec.label}
+    </Badge>
+  );
 }
 
-export function RequestStatusBadge({ status }: { status: string }) {
-  const cfg = STATUS_LABEL[status] ?? { label: status, tone: 'neutral' as Tone };
-  return <Badge tone={cfg.tone}>{cfg.label}</Badge>;
+/** Badge for a leave/correction workflow status. */
+export function RequestStatusBadge({
+  status,
+  size = 'md',
+}: {
+  status: string;
+  size?: keyof typeof SIZES;
+}) {
+  const spec = requestStatus(status);
+  return (
+    <Badge tone={spec.tone} size={size} icon={spec.icon}>
+      {spec.label}
+    </Badge>
+  );
 }
 
-export const LEAVE_TYPE_LABEL: Record<string, string> = {
-  ANNUAL: 'Cuti tahunan',
-  SICK: 'Sakit',
-  PERSONAL: 'Pribadi',
-  UNPAID: 'TanpaBayar',
-  OTHER: 'Lainnya',
-};
-
-export function LeaveTypeBadge({ type }: { type: string }) {
-  return <Badge tone="info">{LEAVE_TYPE_LABEL[type] ?? type}</Badge>;
+/** Neutral badge for reference data such as departments, shifts and offices. */
+export function MetaBadge({
+  children,
+  className = '',
+  title,
+}: {
+  children: ReactNode;
+  className?: string;
+  title?: string;
+}) {
+  return (
+    <Badge tone="neutral" size="sm" title={title} className={className}>
+      {children}
+    </Badge>
+  );
 }
+
+/** Dot used where a full badge would crowd a table cell. Always beside text. */
+export function ToneDot({ tone }: { tone: Tone }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-block size-2 shrink-0 rounded-pill ${
+        tone === 'neutral'
+          ? 'bg-ink-muted'
+          : tone === 'success'
+            ? 'bg-success-bright'
+            : tone === 'warning'
+              ? 'bg-warning-bright'
+              : tone === 'danger'
+                ? 'bg-danger'
+                : tone === 'info'
+                  ? 'bg-info-bright'
+                  : 'bg-accent-bright'
+      }`}
+    />
+  );
+}
+
+export { iconSize };

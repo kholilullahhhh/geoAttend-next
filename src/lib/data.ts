@@ -564,6 +564,79 @@ export async function fetchCorrections(status?: RequestStatusFilter): Promise<Co
 export type RequestStatusFilter = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 
 // ---------------------------------------------------------------------------
+// Approvals queues
+// ---------------------------------------------------------------------------
+
+export interface PendingCounts {
+  leave: number;
+  corrections: number;
+  total: number;
+}
+
+/**
+ * Pending review counts, for the navigation badge.
+ *
+ * Two `head: true` count queries rather than fetching the rows: the sidebar only
+ * needs a number, and the approvals page itself reads the full lists. RLS
+ * scopes both to HR/ADMIN, so an employee would simply see zero.
+ */
+export async function fetchPendingCounts(): Promise<PendingCounts> {
+  const supabase = await createServerSupabaseClient();
+
+  const [leave, corrections] = await Promise.all([
+    supabase
+      .from('leave_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'PENDING'),
+    supabase
+      .from('attendance_corrections')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'PENDING'),
+  ]);
+
+  // A count is a nicety; a failed badge must never take the shell down with it.
+  const leaveCount = leave.error ? 0 : (leave.count ?? 0);
+  const correctionCount = corrections.error ? 0 : (corrections.count ?? 0);
+
+  return {
+    leave: leaveCount,
+    corrections: correctionCount,
+    total: leaveCount + correctionCount,
+  };
+}
+
+/**
+ * Organisation configuration (single row, `id = 1`).
+ *
+ * Read-only here. These values decide who can check in and whether a record
+ * counts as late, so they belong in a reviewed migration rather than an ad-hoc
+ * web form — see the note on the settings page.
+ */
+export interface OrgSettings {
+  company_name: string;
+  brand_accent: string;
+  timezone: string;
+  max_location_accuracy_m: number;
+  allow_out_of_radius: boolean;
+  photo_retention_days: number;
+  max_photo_bytes: number;
+  updated_at: string;
+}
+
+export async function fetchOrgSettings(): Promise<OrgSettings | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('organization_settings')
+    .select(
+      'company_name, brand_accent, timezone, max_location_accuracy_m, allow_out_of_radius, photo_retention_days, max_photo_bytes, updated_at',
+    )
+    .eq('id', 1)
+    .maybeSingle();
+  if (error) throw new DataError('Gagal memuat pengaturan organisasi.', error.message);
+  return (data as OrgSettings | null) ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // Mutations — always through audited RPCs, never a direct table write
 // ---------------------------------------------------------------------------
 

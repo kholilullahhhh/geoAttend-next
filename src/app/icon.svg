@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!--
+    GeoAttend mark: the brand accent pin on the warm page background.
+
+    `currentColor` is not usable here — `app/icon.svg` is rasterised by Next and
+    the tokens are not in scope — so the two values are the mobile app's
+    `brand.accent` and `colors.bg` verbatim. Change both if the brand moves.
+  -->
+  <rect width="32" height="32" rx="8" fill="#FAF9F7" />
+  <path
+    fill="#C2410C"
+    d="M16 5.5c-3.87 0-7 3.02-7 6.75 0 4.94 6.1 12.6 6.36 12.92a.8.8 0 0 0 1.28 0C17.4 24.85 23 17.19 23 12.25c0-3.73-3.13-6.75-7-6.75Zm0 9.4a2.65 2.65 0 1 1 0-5.3 2.65 2.65 0 0 1 0 5.3Z"
+  />
+</svg>
